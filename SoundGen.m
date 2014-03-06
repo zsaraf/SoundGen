@@ -16,6 +16,7 @@
 @property (readwrite) AUGraph   processingGraph;
 @property (readwrite) AudioUnit samplerUnit;
 @property (readwrite) AudioUnit ioUnit;
+@property (nonatomic, strong) NSMutableSet *currentlyPlayingNotes;
 
 @end
 
@@ -42,10 +43,14 @@ enum {
 -(id)initWithSoundFontURL:(NSURL *)soundFontURL patchNumber:(NSInteger)patchNumber
 {
     if (self = [super init]) {
+        self.currentlyPlayingNotes = [[NSMutableSet alloc] init];
+        
         // Set up the audio session for this app, in the process obtaining the
         // hardware sample rate for use in the audio processing graph.
         BOOL audioSessionActivated = [self setupAudioSession];
         NSAssert (audioSessionActivated == YES, @"Unable to set up audio session.");
+        
+        _soundFontURL = soundFontURL;
         
         // Create the audio processing graph; place references to the graph and to the Sampler unit
         // into the processingGraph and samplerUnit instance variables.
@@ -269,6 +274,8 @@ enum {
 
 -(void)playMidiNote:(NSInteger)note velocity:(NSInteger)velocity
 {
+    [self.currentlyPlayingNotes addObject:[NSNumber numberWithInteger:note]];
+    
 //	UInt32 onVelocity = 127;
 	UInt32 noteCommand = 	kMIDIMessage_NoteOn << 4 | 0;
     
@@ -281,6 +288,8 @@ enum {
 
 -(void)stopPlayingMidiNote:(NSInteger)note
 {
+    [self.currentlyPlayingNotes removeObject:[NSNumber numberWithInteger:note]];
+    
 	UInt32 noteCommand = 	kMIDIMessage_NoteOff << 4 | 0;
 	
     OSStatus result = noErr;
@@ -288,6 +297,13 @@ enum {
     
     logTheError:
     if (result != noErr) NSLog (@"Unable to stop playing the low note. Error code: %d '%.4s'\n", (int) result, (const char *)&result);
+}
+
+-(void)stopPlayingAllNotes
+{
+    for (NSNumber *num in [self.currentlyPlayingNotes copy]) {
+        [self stopPlayingMidiNote:num.integerValue];
+    }
 }
 
 #pragma mark -

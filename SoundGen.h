@@ -16,6 +16,7 @@
 -(id)initWithSoundFontURL:(NSURL *)soundFontURL patchNumber:(NSInteger)patchNumber;
 -(void)playMidiNote:(NSInteger)note velocity:(NSInteger)velocity;
 -(void)stopPlayingMidiNote:(NSInteger)note;
+-(void)stopPlayingAllNotes;
 
 @property (nonatomic, strong) NSURL *soundFontURL;
 @property (nonatomic) NSInteger patchNumber;
