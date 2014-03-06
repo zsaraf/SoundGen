@@ -1,7 +1,7 @@
 SoundGen
 ========
 
-Easy to use interface for playing midi notes using Sound Font (extension sf2).
+Easy to use interface for playing midi notes using Sound Font (extension sf2) in iOS.
 
 To use:
 
